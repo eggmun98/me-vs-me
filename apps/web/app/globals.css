@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────
+   디자인 토큰
+
+   색은 반드시 이 토큰으로만 쓴다. 컴포넌트에 hex 를 박지 않는다.
+
+   팔레트  https://coolors.co/eec643-141414-eef0f2-0d21a1-011638
+   메인    오닉스 #141414 · 토스카나의 태양 #EEC643
+   서브    #FAFAFA · #0D21A1 · #011638
+   팔레트 밖에서 가져오는 색은 둘뿐이다 — 승리 초록(잔디 관습)과 패배 빨강.
+   ────────────────────────────────────────────── */
+@theme {
+  /* 표면 — 배경은 순백보다 아주 살짝만 눌러 눈을 편하게 한다.
+     카드와 대비가 미묘하므로 면 구분은 테두리가 맡는다. */
+  --color-bg: #fafafa;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f4f4f5;
+  --color-border: #e7e7ea;
+  --color-border-strong: #d3d3d8;
+
+  /* 글자 — 오닉스. 배경이 중성 회색이라 회색 계열도 중성으로 맞춘다 */
+  --color-content: #141414;
+  --color-content-muted: #5f6068;
+  --color-content-dim: #9a9ba3;
+
+  /* 브랜드 */
+  --color-accent: #141414; /* 오닉스 — 주요 버튼 */
+  --color-on-accent: #ffffff;
+  --color-brand: #0d21a1; /* 남청 — 링크·강조 */
+  --color-deep: #011638; /* 네이비 — 진한 강조 */
+
+  /* 승부
+     승 초록 3단계 · 무 골드 · 패 빨강 · 쉬는 날은 채우지 않는다.
+     골드(#EEC643)는 무승부 전용이다. 연승·완승 강조는 승리 초록을 쓴다. */
+  --color-rest: #f4f4f5;
+  --color-lose: #d7263d;
+  --color-draw: #eec643;
+  --color-win-1: #a9e3be;
+  --color-win-2: #47b877;
+  --color-win-3: #14804a;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-content);
+}
+
+/* 전적·승률·달성률은 숫자가 흔들리면 안 된다 */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}

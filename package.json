@@ -1,0 +1,26 @@
+{
+  "name": "nadaena",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "scripts": {
+    "dev": "pnpm --filter @nadaena/web dev",
+    "dev:api": "pnpm --filter @nadaena/api dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "seed": "pnpm --filter @nadaena/api seed"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild"
+    ]
+  }
+}

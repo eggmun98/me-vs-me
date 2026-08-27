@@ -1,0 +1,40 @@
+{
+  "name": "@nadaena/api",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @nadaena/core build && nest start --watch",
+    "build": "pnpm --filter @nadaena/core build && nest build",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "seed": "tsx prisma/seed.ts",
+    "settle": "pnpm build && node dist/scripts/settle.js"
+  },
+  "dependencies": {
+    "@nadaena/core": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/schedule": "^6.0.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@prisma/client": "^6.16.2",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22",
+    "prisma": "^6.16.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5"
+  }
+}

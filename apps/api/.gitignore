@@ -1,0 +1,7 @@
+dist/
+node_modules/
+.env
+.env.local
+
+# OAuth 클라이언트 JSON 등 절대 커밋하지 않는다
+secrets/

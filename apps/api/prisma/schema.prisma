@@ -1,0 +1,234 @@
+// 06-database.md 의 스키마를 그대로 옮긴다.
+// 반복 규칙은 packages/core 의 RepeatRule 과 1:1로 대응한다.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// 사용자 · 인증
+// ─────────────────────────────────────────────
+
+model User {
+  id String @id @default(cuid())
+
+  nickname String  @unique
+  imageUrl String? @map("image_url")
+  bio      String?
+
+  // 하루의 경계 (01-service-plan 6.4)
+  timezone       String @default("Asia/Seoul")
+  dayStartOffset Int    @default(0) @map("day_start_offset")
+
+  /** 온보딩을 마친 시각. null 이면 아직 안 끝났다. */
+  onboardedAt DateTime? @map("onboarded_at")
+  /** 로그인 없이 둘러보기로 공개되는 계정. 공개 엔드포인트는 이 계정만 읽는다. */
+  isDemo      Boolean   @default(false) @map("is_demo")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  authProviders AuthProvider[]
+  refreshTokens RefreshToken[]
+  categories    Category[]
+  missions      Mission[]
+  dailyMissions DailyMission[]
+  dailyRecords  DailyRecord[]
+
+  @@map("users")
+}
+
+model AuthProvider {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  provider       AuthProviderType
+  providerUserId String           @map("provider_user_id")
+  email          String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+  @@map("auth_providers")
+}
+
+enum AuthProviderType {
+  GOOGLE
+  KAKAO
+  APPLE
+
+  @@map("auth_provider_type")
+}
+
+model RefreshToken {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  tokenHash  String  @unique @map("token_hash")
+  deviceInfo String? @map("device_info")
+
+  expiresAt DateTime  @map("expires_at")
+  rotatedAt DateTime? @map("rotated_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────
+// 미션 정의
+// ─────────────────────────────────────────────
+
+model Category {
+  id     String  @id @default(cuid())
+  userId String? @map("user_id") // null 이면 시스템 기본 카테고리
+
+  name  String
+  order Int    @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  missions Mission[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+model Mission {
+  id         String  @id @default(cuid())
+  userId     String  @map("user_id")
+  categoryId String? @map("category_id")
+
+  name         String
+  targetAmount Int?       @map("target_amount")
+  unit         String?
+  difficulty   Difficulty @default(NORMAL)
+
+  // 반복 규칙 — packages/core 의 RepeatRule 과 대응한다.
+  // weekOrder 가 있으면 "매월 N째 주 요일", 없으면 "매월 N일"이다.
+  repeatType      RepeatType @default(DAILY) @map("repeat_type")
+  repeatInterval  Int        @default(1) @map("repeat_interval")
+  repeatWeekdays  Int[]      @map("repeat_weekdays")
+  repeatWeekOrder Int?       @map("repeat_week_order")
+  repeatMonthDay  Int?       @map("repeat_month_day")
+  repeatMonth     Int?       @map("repeat_month")
+  repeatStartDate DateTime   @map("repeat_start_date") @db.Date
+
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  dailyMissions DailyMission[]
+
+  @@index([userId, isActive, deletedAt])
+  @@map("missions")
+}
+
+enum RepeatType {
+  ONCE
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+
+  @@map("repeat_type")
+}
+
+enum Difficulty {
+  EASY
+  NORMAL
+  HARD
+
+  @@map("difficulty")
+}
+
+// ─────────────────────────────────────────────
+// 그날의 승부
+// ─────────────────────────────────────────────
+
+model DailyMission {
+  id        String @id @default(cuid())
+  userId    String @map("user_id")
+  missionId String @map("mission_id")
+
+  date DateTime @db.Date
+
+  // 그날의 스냅샷. 미션 정의가 바뀌어도 과거 기록은 그대로 남는다. (06-database.md 1.2)
+  name         String
+  categoryName String?    @map("category_name")
+  targetAmount Int?       @map("target_amount")
+  unit         String?
+  difficulty   Difficulty
+
+  result      MissionResult @default(PENDING)
+  completedAt DateTime?     @map("completed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mission Mission @relation(fields: [missionId], references: [id])
+
+  @@unique([userId, date, missionId])
+  @@index([userId, date])
+  @@index([userId, missionId])
+  @@map("daily_missions")
+}
+
+enum MissionResult {
+  PENDING
+  WIN
+  LOSE
+
+  @@map("mission_result")
+}
+
+model DailyRecord {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  date DateTime @db.Date
+
+  result     DailyResult
+  totalCount Int         @default(0) @map("total_count")
+  winCount   Int         @default(0) @map("win_count")
+
+  reflection String?
+
+  settledAt DateTime? @map("settled_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date(sort: Desc)])
+  @@map("daily_records")
+}
+
+enum DailyResult {
+  IN_PROGRESS
+  WIN
+  DRAW
+  LOSE
+  REST
+
+  @@map("daily_result")
+}
