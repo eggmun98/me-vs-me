@@ -57,6 +57,21 @@ export default (): ExpoConfig => ({
     "expo-router",
     "expo-secure-store",
     ["expo-splash-screen", { backgroundColor: "#fafafa", resizeMode: "contain" }],
+    /**
+     * 카카오 안드로이드 SDK 는 Maven Central 에 없고 카카오 저장소에만 있다.
+     *
+     * `@react-native-kakao/core` 가 `com.kakao.sdk:v2-common` 을 의존성으로 걸면서
+     * 저장소는 등록해주지 않아서, 이걸 빼면 Gradle 이 아티팩트를 못 찾고 죽는다.
+     * 네이티브 모듈은 키 유무와 상관없이 항상 링크되므로 `socialPlugins()` 밖에 둔다.
+     */
+    [
+      "expo-build-properties",
+      {
+        android: {
+          extraMavenRepos: ["https://devrepo.kakao.com/nexus/content/groups/public/"],
+        },
+      },
+    ],
     ...socialPlugins(),
   ],
 
