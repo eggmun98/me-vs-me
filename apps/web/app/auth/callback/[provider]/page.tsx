@@ -2,8 +2,7 @@
 
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { loginWithSocial } from "@/domains/auth/authApi";
-import type { SocialProviderId } from "@/domains/auth/authTypes";
+import { loginWithSocial, type SocialProviderId } from "@nadaena/api-client";
 
 export default function AuthCallbackPage() {
   const params = useParams<{ provider: string }>();
@@ -30,7 +29,7 @@ export default function AuthCallbackPage() {
       return;
     }
 
-    loginWithSocial(provider, code)
+    loginWithSocial(provider, { code })
       .then((result) => router.replace(result.isNewUser ? "/onboarding" : "/today"))
       .catch((caught: unknown) => {
         setError(caught instanceof Error ? caught.message : "로그인에 실패했습니다.");

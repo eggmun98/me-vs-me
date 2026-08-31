@@ -2,7 +2,7 @@
 
 import { WEEKDAY_LABELS } from "@nadaena/core";
 import { Modal, ModalButton } from "@/shared/ui/Modal";
-import type { CalendarDay } from "./calendarTypes";
+import type { CalendarDay } from "@nadaena/api-client";
 
 const EDITABLE_DAYS = 7;
 

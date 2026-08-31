@@ -1,5 +1,5 @@
 import { GrassLegend, MonthGrass } from "./MonthGrass";
-import type { RecordSummary, WinLoseCount } from "@/domains/today/todayTypes";
+import { type RecordSummary, type WinLoseCount } from "@nadaena/api-client";
 
 export function SummarySide({ summary }: { summary: RecordSummary }) {
   return (

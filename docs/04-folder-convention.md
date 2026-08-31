@@ -48,12 +48,11 @@ commons/types/           타입
 nadaena/
 ├─ apps/
 │  ├─ api/          NestJS
-│  ├─ web/          Vite + React
-│  └─ mobile/       Expo (React Native)   ← Phase 2 이후
+│  ├─ web/          Next.js
+│  └─ mobile/       Expo (React Native)
 ├─ packages/
 │  ├─ core/         승패 · 달성률 · 연승 · 날짜 경계 (순수 함수)
-│  ├─ types/        앱 간 공유 타입
-│  └─ apiClient/    HTTP 호출 (web / mobile 공유)
+│  └─ api-client/   HTTP 호출 · 도메인 타입 · React Query 훅 (web / mobile 공유)
 └─ docs/
 ```
 
@@ -176,9 +175,21 @@ bookbla는 `screens/Party/PartyStack.tsx`처럼 도메인마다 네비게이터 
 
 Expo Router는 **파일 위치가 곧 라우트**라 그 파일이 필요 없다. 라우트 정의가 `app/`에 모이고 도메인 폴더는 순수하게 기능만 남는다. 관심사가 더 깔끔하게 갈린다.
 
-### Expo + pnpm 주의
+### Expo + pnpm — `metro.config.js`
 
-Metro 번들러가 pnpm의 심볼릭 링크를 잘 못 씹는다. `apps/mobile`만 `node-linker=hoisted`로 두거나 Metro의 `watchFolders` / `nodeModulesPaths`를 손봐야 한다. (`03-tech-stack.md` 18장)
+Metro 는 기본적으로 앱 폴더 밖을 보지 않는다. 두 가지를 손봤다.
+
+```js
+config.watchFolders = [workspaceRoot];                    // packages/ 를 고치면 바로 반영
+config.resolver.nodeModulesPaths = [앱, 워크스페이스 루트];  // 루트에 올라온 것도 찾는다
+```
+
+**`disableHierarchicalLookup` 은 켜지 않는다.** npm·yarn 처럼 의존성이 평평하게 올라오는
+구조에서는 켜는 게 맞지만, pnpm 은 `.pnpm/<패키지>/node_modules` 안에 각자의 의존성을 숨겨둔다.
+상위 폴더 탐색을 끄면 `expo` 가 자기 `expo-modules-core` 를 못 찾고 번들이 깨진다.
+
+**peer 로만 걸린 패키지는 명시적으로 넣는다.** pnpm 은 peer 를 앱의 `node_modules` 로
+끌어올려 주지 않는다. `@expo/metro-runtime` 이 여기 해당한다.
 
 ---
 
@@ -267,22 +278,43 @@ npm 스코프는 도메인과 맞춘다.
 @nadaena/apiClient
 ```
 
-### `packages/types`
+### `packages/api-client`
 
-앱 간에 실제로 오가는 타입만 둔다. 한 도메인에서만 쓰는 타입은 그 도메인 폴더에 둔다.
-
-### `packages/apiClient`
-
-**아직 만들지 않았다.** 웹 하나뿐이라 지금은 이렇게 두고 있다.
+**앱을 붙이면서 올렸다.** 웹 하나뿐일 때는 `apps/web/src/` 에 그대로 뒀다.
+사용처가 하나일 때 만든 추상화는 두 번째 사용처가 생기면 거의 항상 틀려 있기 때문이다.
 
 ```
-apps/web/src/shared/api/     apiClient · QueryProvider · queryKeys
-apps/web/src/domains/*/use*  도메인별 React Query 훅
+packages/api-client/src/
+├─ client/      apiClient · accessToken · apiError · config
+├─ queryKeys.ts
+├─ auth/        loginWithSocial · restoreSession · logout
+├─ user/        useUser · 온보딩 프리셋
+├─ mission/     useMissions · 반복 옵션 · 맞춤 반복 계산
+├─ today/       useToday · 응답 타입 · 날짜 문구
+└─ record/      useRecords · 달력 격자 계산 · 잔디 단계 · 통계 타입
 ```
 
-mobile 을 붙일 때, 실제로 양쪽이 쓰는 것만 올린다. React Query 훅은 UI 가 없어서 그대로 공유된다.
+**UI 가 없는 것만 올린다.** RN 에는 DOM 이 없어 컴포넌트는 공유되지 않는다.
+계산 · API 호출 · React Query 훅은 화면이 없어 그대로 공유된다.
 
-> 미리 올리지 않는 이유: 사용처가 하나일 때 만든 추상화는 두 번째 사용처가 생기면 거의 항상 틀려 있다.
+색과 클래스는 올리지 않는다. 대신 **단계만 공유하고 칠하는 건 각자 한다.**
+
+| 공유 | 각 앱 |
+| --- | --- |
+| `getGrassTier()` → `WIN_2` | 웹 `bg-win-2` / 앱 `colors.win2` |
+| `getResultText()` → `"WIN"` | 웹 `text-win-3` / 앱 `colors.win3` |
+
+### 웹과 앱의 차이는 두 줄이다
+
+`configureApiClient()` 에 넘기는 값만 다르고 호출 · 401 재시도 · 토큰 회전은 전부 공유한다.
+
+```ts
+// 웹 — refresh 는 httpOnly 쿠키라 저장소가 없다
+configureApiClient({ baseUrl: process.env.NEXT_PUBLIC_API_URL });
+
+// 앱 — 쿠키가 없어 refresh 를 직접 들고 다닌다
+configureApiClient({ baseUrl: env.apiUrl, refreshTokenStore: secureRefreshStore });
+```
 
 ### 반복 규칙은 두 가지 모양을 쓴다
 

@@ -4,15 +4,16 @@ import { describeRepeat, WEEKDAY_LABELS, type RepeatRule, type Weekday } from "@
 import { useState } from "react";
 import { Field, inputClassName } from "@/shared/ui/Field";
 import { Modal, ModalButton } from "@/shared/ui/Modal";
-import { REPEAT_INTERVAL_MAX } from "./missionConstants";
 import {
   buildCustomRule,
   createInitialCustomState,
+  type CustomRepeatState,
+  FREQ_UNIT_LABELS,
   isFreqUsingMonthlyMode,
   isFreqUsingWeekdays,
+  REPEAT_INTERVAL_MAX,
   toggleWeekday,
-} from "./repeatCustom";
-import { FREQ_UNIT_LABELS, type CustomRepeatState } from "./repeatCustomTypes";
+} from "@nadaena/api-client";
 
 const ALL_WEEKDAYS: Weekday[] = [0, 1, 2, 3, 4, 5, 6];
 

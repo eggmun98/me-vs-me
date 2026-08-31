@@ -2,8 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
-import { refreshAccessToken } from "./authApi";
-import { getAccessToken } from "./authStorage";
+import { getAccessToken, restoreSession } from "@nadaena/api-client";
 
 const PUBLIC_PATHS = ["/login", "/auth/callback", "/demo"];
 const LANDING_PATH = "/";
@@ -28,8 +27,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
       return;
     }
 
-    void refreshAccessToken().then((token) => {
-      if (!token) router.replace("/login");
+    void restoreSession().then((restored) => {
+      if (!restored) router.replace("/login");
       setIsChecking(false);
     });
   }, [isPublic, router]);

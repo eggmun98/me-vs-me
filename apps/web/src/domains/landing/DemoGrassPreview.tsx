@@ -1,5 +1,5 @@
 import { GrassCell } from "@/domains/record/GrassCell";
-import type { GrassDay } from "@/domains/today/todayTypes";
+import { type GrassDay } from "@nadaena/api-client";
 
 const DAYS_PER_WEEK = 7;
 

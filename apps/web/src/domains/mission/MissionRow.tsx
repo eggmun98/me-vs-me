@@ -1,7 +1,7 @@
 "use client";
 
 import { describeRepeat, toRepeatRule } from "@nadaena/core";
-import type { Mission } from "./missionTypes";
+import { type Mission } from "@nadaena/api-client";
 
 export function MissionRow({
   mission,

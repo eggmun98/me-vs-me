@@ -1,36 +1,16 @@
-import type { DailyResult } from "@nadaena/core";
+import { getResultText, type DailyResult } from "@nadaena/api-client";
 
-type ResultLabel = {
-  text: string;
-  toneClassName: string;
+/** 문구는 공유하고, 색은 여기서 웹의 Tailwind 클래스로 붙인다. */
+const RESULT_TONE: Record<DailyResult, string> = {
+  IN_PROGRESS: "text-content-muted",
+  WIN: "text-win-3",
+  DRAW: "text-draw",
+  LOSE: "text-content-muted",
+  REST: "text-content-muted",
 };
 
-const RESULT_LABELS: Record<DailyResult, ResultLabel> = {
-  IN_PROGRESS: { text: "진행 중", toneClassName: "text-content-muted" },
-  WIN: { text: "WIN", toneClassName: "text-win-3" },
-  DRAW: { text: "DRAW", toneClassName: "text-draw" },
-  LOSE: { text: "LOSE", toneClassName: "text-content-muted" },
-  REST: { text: "쉬는 날", toneClassName: "text-content-muted" },
-};
-
-export function getResultLabel(result: DailyResult): ResultLabel {
-  return RESULT_LABELS[result];
+export function getResultLabel(result: DailyResult): { text: string; toneClassName: string } {
+  return { text: getResultText(result), toneClassName: RESULT_TONE[result] };
 }
 
-export function formatKoreanDate(isoDate: string): string {
-  const [year, month, day] = isoDate.split("-").map(Number);
-  const weekday = ["일", "월", "화", "수", "목", "금", "토"][
-    new Date(year, month - 1, day).getDay()
-  ];
-
-  return `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")} (${weekday})`;
-}
-
-export function formatMissionTarget(
-  targetAmount: number | null,
-  unit: string | null,
-): string | null {
-  if (targetAmount === null || unit === null) return null;
-
-  return `${targetAmount}${unit}`;
-}
+export { formatKoreanDate, formatMissionTarget } from "@nadaena/api-client";

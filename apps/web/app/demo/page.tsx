@@ -6,8 +6,7 @@ import { useState } from "react";
 import { SummarySide } from "@/domains/record/SummarySide";
 import { StatsView } from "@/domains/record/stats/StatsView";
 import { TodayView } from "@/domains/today/TodayView";
-import { apiGet } from "@/shared/api/apiClient";
-import { queryKeys } from "@/shared/api/queryKeys";
+import { apiGet, queryKeys } from "@nadaena/api-client";
 import type { DemoTour } from "@/domains/landing/landingApi";
 import { QueryState } from "@/shared/ui/QueryState";
 
@@ -24,7 +23,7 @@ export default function DemoPage() {
     <div className="min-h-screen">
       <DemoBanner />
 
-      <div className="mx-auto max-w-5xl px-6 py-8">
+      <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
         <nav className="mb-5 flex gap-1">
           <TabButton isOn={tab === "TODAY"} onClick={() => setTab("TODAY")}>
             오늘

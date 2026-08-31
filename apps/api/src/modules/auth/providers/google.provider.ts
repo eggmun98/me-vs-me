@@ -4,6 +4,7 @@ import type { SocialProfile, SocialProvider } from "./socialProvider";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const PROFILE_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
+const TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 
 type GoogleTokenResponse = { access_token?: string; error_description?: string };
 
@@ -14,22 +15,67 @@ type GoogleProfileResponse = {
   email?: string;
 };
 
+/** tokeninfo 가 검증까지 끝내고 돌려주는 클레임 */
+type GoogleIdTokenClaims = GoogleProfileResponse & {
+  aud?: string;
+  error_description?: string;
+};
+
 @Injectable()
 export class GoogleProvider implements SocialProvider {
   readonly name = "GOOGLE" as const;
+  private audienceCache: Set<string> | null = null;
 
   constructor(private readonly config: ConfigService) {}
 
-  async fetchProfile(code: string, redirectUri: string): Promise<SocialProfile> {
+  async fetchProfileByCode(code: string, redirectUri: string): Promise<SocialProfile> {
     const accessToken = await this.exchangeCode(code, redirectUri);
-    const profile = await this.fetchGoogleProfile(accessToken);
 
-    return {
-      providerUserId: profile.sub,
-      nickname: profile.name ?? null,
-      imageUrl: profile.picture ?? null,
-      email: profile.email ?? null,
-    };
+    return toProfile(await this.fetchGoogleProfile(accessToken));
+  }
+
+  /**
+   * 앱이 넘기는 값은 구글 SDK 가 받아온 **ID token** 이다.
+   *
+   * 카카오와 달리 서명된 JWT 라 서버가 직접 검증할 수 있다.
+   * 검증은 구글의 tokeninfo 에 맡긴다 — 공개키를 직접 받아다 캐싱하는 코드를 안 짜도 된다.
+   */
+  async fetchProfileByToken(idToken: string): Promise<SocialProfile> {
+    const response = await fetch(`${TOKENINFO_URL}?id_token=${encodeURIComponent(idToken)}`);
+    const claims = (await response.json()) as GoogleIdTokenClaims;
+
+    if (!response.ok || !claims.sub) {
+      throw new UnauthorizedException(
+        claims.error_description ?? "구글 토큰을 확인하지 못했습니다.",
+      );
+    }
+
+    /**
+     * 서명이 맞아도 **우리 앱에 발급된 토큰인지**는 별개다.
+     * aud 를 안 보면 남의 구글 앱에서 받은 토큰으로도 로그인이 된다.
+     */
+    if (!claims.aud || !this.allowedAudiences().has(claims.aud)) {
+      throw new UnauthorizedException("다른 앱에 발급된 구글 토큰입니다.");
+    }
+
+    return toProfile(claims);
+  }
+
+  /**
+   * 안드로이드는 webClientId, iOS 는 iOS 클라이언트 ID 로 aud 가 잡힌다.
+   * 둘 다 허용해야 두 플랫폼이 같은 계정으로 들어온다.
+   */
+  private allowedAudiences(): Set<string> {
+    this.audienceCache ??= new Set(
+      [
+        this.config.get<string>("GOOGLE_CLIENT_ID"),
+        ...(this.config.get<string>("GOOGLE_ALLOWED_AUDIENCES") ?? "").split(","),
+      ]
+        .map((value) => value?.trim())
+        .filter((value): value is string => Boolean(value)),
+    );
+
+    return this.audienceCache;
   }
 
   private async exchangeCode(code: string, redirectUri: string): Promise<string> {
@@ -72,4 +118,13 @@ export class GoogleProvider implements SocialProvider {
 
     return (await response.json()) as GoogleProfileResponse;
   }
+}
+
+function toProfile(profile: GoogleProfileResponse): SocialProfile {
+  return {
+    providerUserId: profile.sub,
+    nickname: profile.name ?? null,
+    imageUrl: profile.picture ?? null,
+    email: profile.email ?? null,
+  };
 }

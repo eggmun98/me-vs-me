@@ -1,4 +1,4 @@
-import type { DailyResult } from "./todayTypes";
+import { type DailyResult } from "@nadaena/api-client";
 
 const BAR_COLOR: Record<DailyResult, string> = {
   IN_PROGRESS: "bg-win-2",

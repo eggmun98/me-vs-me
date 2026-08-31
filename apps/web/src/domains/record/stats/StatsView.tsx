@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { RecordStats, StatsPeriod } from "./statsTypes";
+import { type RecordStats, type StatsPeriod } from "@nadaena/api-client";
 
 const PERIOD_OPTIONS: Array<{ value: StatsPeriod; label: string }> = [
   { value: "MONTH", label: "이번 달" },

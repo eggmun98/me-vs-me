@@ -13,11 +13,21 @@ const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(32, "JWT_ACCESS_SECRET 은 32자 이상이어야 합니다."),
   JWT_REFRESH_SECRET: z.string().min(32, "JWT_REFRESH_SECRET 은 32자 이상이어야 합니다."),
   OAUTH_REDIRECT_BASE: z.string().url().default("http://localhost:3000"),
+  /**
+   * 웹 말고 다른 콜백 주소를 허용할 때 쓴다. 쉼표로 구분한다.
+   * 앱은 `nadaena://auth/callback/kakao` 같은 커스텀 스킴으로 돌아온다.
+   */
+  OAUTH_ALLOWED_REDIRECT_URIS: z.string().optional(),
 
   KAKAO_REST_API_KEY: z.string().optional(),
   KAKAO_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
+  /**
+   * 앱이 보낸 ID 토큰의 `aud` 로 허용할 값. 쉼표로 구분한다.
+   * `GOOGLE_CLIENT_ID` 는 항상 허용되므로 iOS 클라이언트 ID 만 추가하면 된다.
+   */
+  GOOGLE_ALLOWED_AUDIENCES: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

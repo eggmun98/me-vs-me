@@ -1,0 +1,73 @@
+import { ApiRequestError, type Me, useUpdateMe } from "@nadaena/api-client";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { TIMEZONE_OPTIONS } from "./timezones";
+import { colors, spacing } from "@/shared/theme/colors";
+import { AppButton } from "@/shared/ui/AppButton";
+import { Card } from "@/shared/ui/Card";
+import { ChoiceChips } from "@/shared/ui/ChoiceChips";
+import { AppTextInput, Field } from "@/shared/ui/Field";
+
+export function SettingsView({ me }: { me: Me }) {
+  const updateMe = useUpdateMe();
+  const [nickname, setNickname] = useState(me.nickname);
+  const [bio, setBio] = useState(me.bio ?? "");
+  const [timezone, setTimezone] = useState(me.timezone);
+  const [error, setError] = useState<string | null>(null);
+
+  const isDirty =
+    nickname.trim() !== me.nickname || bio.trim() !== (me.bio ?? "") || timezone !== me.timezone;
+
+  function handleSave() {
+    setError(null);
+    updateMe.mutate(
+      { nickname: nickname.trim(), bio: bio.trim(), timezone },
+      {
+        // 닉네임은 unique 다. 중복이면 서버가 거절한다. (06-database 8.3)
+        onError: (caught) =>
+          setError(caught instanceof ApiRequestError ? caught.message : "저장하지 못했습니다."),
+      },
+    );
+  }
+
+  return (
+    <View style={styles.root}>
+      <Card title="프로필">
+        <Field label="닉네임" hint="공개 프로필 주소에 쓰입니다.">
+          <AppTextInput
+            value={nickname}
+            onChangeText={setNickname}
+            maxLength={20}
+            autoCapitalize="none"
+          />
+        </Field>
+        <Field label="소개">
+          <AppTextInput value={bio} onChangeText={setBio} placeholder="오늘도 나와 싸운다" />
+        </Field>
+      </Card>
+
+      <Card title="하루의 기준">
+        <Field
+          label="타임존"
+          hint="바꾸면 오늘부터 적용됩니다. 지난 기록의 날짜는 바뀌지 않습니다."
+        >
+          <ChoiceChips options={TIMEZONE_OPTIONS} value={timezone} onChange={setTimezone} />
+        </Field>
+      </Card>
+
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      <AppButton
+        label="저장"
+        disabled={!isDirty || nickname.trim().length === 0}
+        isLoading={updateMe.isPending}
+        onPress={handleSave}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: { gap: spacing.lg },
+  error: { fontSize: 13, color: colors.lose },
+});

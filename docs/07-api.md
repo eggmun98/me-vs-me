@@ -107,8 +107,9 @@ completedAt: "2026-08-26T13:20:11.000Z"
 `provider`: `google` | `kakao`
 
 ```json
-// Request — redirectUri 는 보내지 않는다. 서버가 OAUTH_REDIRECT_BASE 로 만든다.
-{ "code": "..." }
+// Request — 웹은 인가 코드, 앱은 네이티브 SDK 토큰. 둘 중 하나만 보낸다.
+{ "code": "..." }                 // 웹
+{ "token": "..." }                // 앱
 
 // Response 200
 {
@@ -118,14 +119,41 @@ completedAt: "2026-08-26T13:20:11.000Z"
 }
 ```
 
-**`redirectUri` 를 클라이언트가 보내지 않는다.** 토큰 교환에 쓰이는 값이라 클라이언트가 정하게 하면
-공격자가 자기 서버로 코드를 흘릴 수 있다. 서버가 `OAUTH_REDIRECT_BASE + /auth/callback/{provider}` 로 만든다.
+**웹과 앱은 다른 흐름으로 들어온다.**
 
-콜백 경로는 소셜 콘솔에 등록한 Redirect URI 와 정확히 같아야 한다.
+| | 웹 | 앱 |
+| --- | --- | --- |
+| 받는 것 | 리다이렉트로 온 인가 코드 | 네이티브 SDK 가 받아둔 토큰 |
+| 서버가 하는 일 | client secret 으로 코드 교환 → 프로필 조회 | 토큰으로 프로필 조회 |
+| 콜백 주소 | 필요 | **없다** |
+
+앱이 웹 흐름을 못 쓰는 이유는 두 가지다.
+
+- 커스텀 스킴(`nadaena://`)을 각 콘솔에 등록해야 하는데, **구글은 웹 클라이언트에 커스텀 스킴을 허용하지 않는다**
+- 카카오톡 앱이 깔려 있으면 그쪽으로 넘어가는 게 자연스러운데, 브라우저 흐름으로는 안 된다
+
+그래서 앱은 네이티브 SDK 로 토큰까지 받고 서버는 프로필만 조회한다.
+**client secret 은 어느 쪽에서도 앱에 들어가지 않는다.**
+
+### 토큰의 종류가 provider 마다 다르다
+
+| provider | 앱이 보내는 것 | 서버 검증 |
+| --- | --- | --- |
+| 카카오 | access token | `kapi.kakao.com/v2/user/me` 호출이 곧 검증이다 |
+| 구글 | **ID token** | `oauth2.googleapis.com/tokeninfo` + `aud` 확인 |
+
+**구글은 `aud` 를 반드시 본다.** 서명이 맞아도 *우리 앱에 발급된 토큰인지*는 별개다.
+안 보면 남의 구글 앱에서 받은 토큰으로도 로그인이 된다.
+허용값은 `GOOGLE_CLIENT_ID` + `GOOGLE_ALLOWED_AUDIENCES` 다.
+
+### `redirectUri` (웹 전용)
+
+허용 목록에 있는 값만 받는다. 없으면 `OAUTH_REDIRECT_BASE + /auth/callback/{provider}` 를 쓴다.
+토큰으로 들어오면 콜백 주소를 보지 않는다 — 리다이렉트를 거치지 않았기 때문이다.
 
 ```
-http://localhost:3000/auth/callback/kakao
-http://localhost:3000/auth/callback/google
+http://localhost:3000/auth/callback/kakao      웹
+http://localhost:3000/auth/callback/google     웹
 ```
 
 **카카오는 이메일을 주지 않을 수 있다.** 식별은 `provider + providerUserId`로 한다. (`03-tech-stack.md` 8장)

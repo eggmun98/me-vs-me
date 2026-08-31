@@ -176,11 +176,10 @@ Next를 뺐던 원래 이유가 **인증 복잡도**였다. React Native가 오�
 apps/
   api        NestJS
   web        Next.js
-  mobile     React Native (Phase 2 이후)
+  mobile     Expo (React Native) — SDK 57
 packages/
   core       승패 판정 · 달성률 · 연승 · 날짜 경계 (순수 함수)
-  types      공유 타입 / API DTO
-  api-client API 호출 래퍼
+  api-client API 호출 · 도메인 타입 · React Query 훅 (web / mobile 공유)
 ```
 
 패키지 매니저: **pnpm workspaces**. Turborepo는 빌드가 느려지면 그때.
@@ -565,7 +564,8 @@ ESLint + Prettier 조합은 모노레포에서 설정이 금방 지저분해진�
 | 상황 | 내용 |
 | --- | --- |
 | **Oracle 포트가 안 열림** | 콘솔의 보안 목록(Security List)만 열어선 안 된다. **인스턴스 안쪽 iptables에도 규칙이 걸려 있다.** "보안 그룹 다 열었는데 왜 안 되지"로 반나절 날리는 게 Oracle에서 제일 흔하다 |
-| **pnpm + React Native** | Metro 번들러가 pnpm의 심볼릭 링크 구조를 잘 못 씹는다. mobile만 `node-linker=hoisted`로 두거나 Metro의 `watchFolders`/`nodeModulesPaths`를 손봐야 한다 |
+| **pnpm + React Native** | ✅ 겪음. `watchFolders` / `nodeModulesPaths` 만 손대면 된다. 단 `disableHierarchicalLookup` 은 켜면 안 되고(pnpm 은 의존성을 중첩해 숨긴다), peer 로만 걸린 `@expo/metro-runtime` 은 직접 넣어야 한다. (`04-folder-convention.md` 5장) |
+| **Expo SDK ≠ npm latest** | `react-native@latest` 를 넣으면 SDK 가 기대하는 버전과 어긋난다. SDK 57 은 RN 0.86.3 이다. 버전은 `expo install --check` 로 맞춘다 |
 | **카카오 이메일 없음** | 이메일 제공이 선택 동의다. 이메일에 unique를 걸면 카카오 가입에서 터진다 |
 | **SPA 새로고침 404** | Caddy에 `try_files {path} /index.html`이 없으면 `/기록` 새로고침 시 404 |
 | **디스크 참** | 도커 빌드 캐시 · 로그 · WAL. DB가 아니라 이것들이 200GB를 채운다 |

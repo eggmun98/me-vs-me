@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { AuthGate } from "@/domains/auth/AuthGate";
 import { QueryProvider } from "@/shared/api/QueryProvider";
 import { AppShell } from "@/shared/ui/AppShell";
 import "./globals.css";
+
+/** 하단 탭바가 아이폰 홈 인디케이터에 가리지 않으려면 safe-area 값을 받아야 한다. */
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   title: "나 VS 나",

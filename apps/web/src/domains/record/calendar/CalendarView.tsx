@@ -2,17 +2,18 @@
 
 import { addDays, formatLocalDate, parseLocalDate } from "@nadaena/core";
 import { useMemo, useState } from "react";
-import type { Mission } from "@/domains/mission/missionTypes";
 import {
   buildCalendarDays,
+  type CalendarDay,
+  type CalendarSource,
+  type CalendarViewMode,
   getMonthGridStart,
   getWeekStartDate,
+  type GrassDay,
+  type Mission,
   MONTH_GRID_CELLS,
-  type CalendarSource,
-} from "./buildCalendarDays";
-import type { GrassDay } from "@/domains/today/todayTypes";
-import type { CalendarDay } from "./calendarTypes";
-import { VIEW_MODE_OPTIONS, type CalendarViewMode } from "./calendarViewTypes";
+  VIEW_MODE_OPTIONS,
+} from "@nadaena/api-client";
 import { DayDetailModal } from "./DayDetailModal";
 import { DayPanel } from "./DayPanel";
 import { MonthGrid } from "./MonthGrid";
@@ -49,12 +50,12 @@ export function CalendarView({
 
   return (
     <>
-      <header className="mb-4 flex items-center justify-between gap-3">
+      <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-lg font-bold tnum">{formatHeading(mode, anchor)}</h1>
 
         <div className="flex items-center gap-2">
           <ModeSwitcher mode={mode} onChange={setMode} />
-          <div className="flex gap-1">
+          <div className="ml-auto flex gap-1 sm:ml-0">
             <StepButton label="‹" onClick={() => move(-1)} />
             <StepButton label="›" onClick={() => move(1)} />
           </div>

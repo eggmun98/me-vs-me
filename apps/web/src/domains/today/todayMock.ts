@@ -1,4 +1,4 @@
-import type { TodayMission, TodayResponse } from "./todayTypes";
+import { type TodayMission, type TodayResponse } from "@nadaena/api-client";
 
 /**
  * 디자인 확인용 상태 모음.

@@ -2,7 +2,7 @@
 
 import { WEEKDAY_LABELS } from "@nadaena/core";
 import { CalendarCell } from "./CalendarCell";
-import type { CalendarDay } from "./calendarTypes";
+import type { CalendarDay } from "@nadaena/api-client";
 
 export function MonthGrid({
   days,

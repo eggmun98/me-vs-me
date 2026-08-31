@@ -1,4 +1,4 @@
-import type { SocialProviderId } from "./authTypes";
+import { type SocialProviderId } from "@nadaena/api-client";
 
 const KAKAO_AUTHORIZE = "https://kauth.kakao.com/oauth/authorize";
 const GOOGLE_AUTHORIZE = "https://accounts.google.com/o/oauth2/v2/auth";

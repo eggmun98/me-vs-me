@@ -9,7 +9,7 @@ import {
   buildRuleFromOption,
   type RepeatOptionId,
   resolveSelectedOption,
-} from "./repeatOptions";
+} from "@nadaena/api-client";
 
 export function RepeatField({
   baseDate,

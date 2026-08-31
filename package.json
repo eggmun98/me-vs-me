@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm --filter @nadaena/web dev",
     "dev:api": "pnpm --filter @nadaena/api dev",
+    "dev:app": "pnpm --filter @nadaena/mobile dev",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",

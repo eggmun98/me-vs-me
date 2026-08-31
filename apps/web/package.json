@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "pnpm --filter @nadaena/core --filter @nadaena/api-client build && next dev",
+    "build": "pnpm --filter @nadaena/core --filter @nadaena/api-client build && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@nadaena/api-client": "workspace:*",
     "@nadaena/core": "workspace:*",
     "@tanstack/react-query": "^5.102.6",
     "next": "16.3.3",

@@ -1,5 +1,4 @@
-import type { RecordStats } from "@/domains/record/stats/statsTypes";
-import type { GrassDay, RecordSummary, TodayResponse } from "@/domains/today/todayTypes";
+import { type GrassDay, type RecordStats, type RecordSummary, type TodayResponse } from "@nadaena/api-client";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api/v1";
 

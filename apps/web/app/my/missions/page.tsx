@@ -5,9 +5,9 @@ import {
   useCreateMission,
   useDeleteMission,
   useMissions,
+  useToday,
   useUpdateMission,
-} from "@/domains/mission/useMissions";
-import { useToday } from "@/domains/today/useToday";
+} from "@nadaena/api-client";
 import { QueryState } from "@/shared/ui/QueryState";
 
 export default function MissionsPage() {
@@ -18,7 +18,7 @@ export default function MissionsPage() {
   const deleteMission = useDeleteMission();
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
       <QueryState isLoading={isLoading} error={error}>
         {data && today && (
           <MissionListView

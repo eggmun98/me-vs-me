@@ -1,7 +1,7 @@
 "use client";
 
 import { Modal, ModalButton } from "@/shared/ui/Modal";
-import type { Mission } from "./missionTypes";
+import { type Mission } from "@nadaena/api-client";
 
 /**
  * 6.5 스냅샷 규칙을 반드시 설명해야 한다.

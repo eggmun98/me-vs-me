@@ -27,7 +27,7 @@ export class AuthController {
   ) {
     const result = await this.authService.loginWithSocial(
       provider,
-      dto.code,
+      { code: dto.code, redirectUri: dto.redirectUri, token: dto.token },
       request.headers["user-agent"] ?? null,
     );
 

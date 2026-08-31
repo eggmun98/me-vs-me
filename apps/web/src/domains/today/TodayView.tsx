@@ -3,7 +3,7 @@
 import { ProgressGauge } from "./ProgressGauge";
 import { TodayMissionList } from "./TodayMissionList";
 import { formatKoreanDate, getResultLabel } from "./todayLabels";
-import type { TodayResponse } from "./todayTypes";
+import { type TodayResponse } from "@nadaena/api-client";
 
 export function TodayView({
   today,

@@ -1,7 +1,7 @@
 "use client";
 
 import { GrassCell } from "../GrassCell";
-import type { CalendarDay } from "./calendarTypes";
+import type { CalendarDay } from "@nadaena/api-client";
 
 const DAYS_PER_WEEK = 7;
 const MONTH_LABELS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];

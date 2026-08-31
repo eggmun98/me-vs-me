@@ -14,7 +14,7 @@ export function ScenarioSwitcher<T extends string>({
   onSelect: (name: T | null) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5 border-b border-border bg-surface px-6 py-2.5">
+    <div className="flex flex-wrap items-center gap-1.5 border-b border-border bg-surface px-4 py-2.5 sm:px-6">
       <span className="mr-1 text-[11px] text-content-dim">상태</span>
 
       <SwitcherButton isOn={selected === null} onClick={() => onSelect(null)}>

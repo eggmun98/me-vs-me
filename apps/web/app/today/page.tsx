@@ -4,7 +4,7 @@ import { useState } from "react";
 import { SummarySide } from "@/domains/record/SummarySide";
 import { TODAY_SCENARIOS, type TodayScenarioName } from "@/domains/today/todayMock";
 import { TodayView } from "@/domains/today/TodayView";
-import { useToday, useUpdateMissionResult } from "@/domains/today/useToday";
+import { useToday, useUpdateMissionResult } from "@nadaena/api-client";
 import { ScenarioSwitcher } from "@/shared/ui/ScenarioSwitcher";
 import { QueryState } from "@/shared/ui/QueryState";
 
@@ -25,7 +25,7 @@ export default function TodayPage() {
         onSelect={setScenario}
       />
 
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8 lg:flex-row lg:gap-8">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8 lg:flex-row lg:gap-8">
         <div className="min-w-0 flex-1">
           <QueryState isLoading={isLoading} error={error}>
             {today && (

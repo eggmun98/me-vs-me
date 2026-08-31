@@ -2,14 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useCategories } from "@/domains/mission/useMissions";
 import {
   countRequiredWins,
   RECOMMENDED_COUNT,
   RECOMMENDED_MISSIONS,
   toOnboardingMission,
-} from "@/domains/user/onboardingPresets";
-import { useCompleteOnboarding, useMe, useSuggestNickname } from "@/domains/user/useUser";
+  useCategories,
+  useCompleteOnboarding,
+  useMe,
+  useSuggestNickname,
+} from "@nadaena/api-client";
 import { Field, inputClassName } from "@/shared/ui/Field";
 
 const TIMEZONES = ["Asia/Seoul", "Asia/Tokyo", "America/New_York", "Europe/London", "UTC"];
@@ -86,7 +88,7 @@ export default function OnboardingPage() {
               value={nickname}
               onChange={(event) => setNickname(event.target.value)}
               maxLength={20}
-              placeholder="문성진"
+              placeholder="도전자"
               className={inputClassName}
             />
             <button

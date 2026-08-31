@@ -1,7 +1,7 @@
 "use client";
 
 import { buildSocialLoginUrl } from "@/domains/auth/socialLoginUrl";
-import type { SocialProviderId } from "@/domains/auth/authTypes";
+import { type SocialProviderId } from "@nadaena/api-client";
 import { useState } from "react";
 
 export default function LoginPage() {

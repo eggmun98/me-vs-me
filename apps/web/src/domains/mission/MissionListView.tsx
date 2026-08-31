@@ -5,7 +5,7 @@ import { useState } from "react";
 import { MissionDeleteModal } from "./MissionDeleteModal";
 import { MissionFormModal } from "./MissionFormModal";
 import { MissionRow } from "./MissionRow";
-import type { Mission, MissionDraft } from "./missionTypes";
+import { type Mission, type MissionDraft } from "@nadaena/api-client";
 
 export function MissionListView({
   baseDate,

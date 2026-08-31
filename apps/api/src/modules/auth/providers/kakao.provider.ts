@@ -21,8 +21,12 @@ export class KakaoProvider implements SocialProvider {
 
   constructor(private readonly config: ConfigService) {}
 
-  async fetchProfile(code: string, redirectUri: string): Promise<SocialProfile> {
-    const accessToken = await this.exchangeCode(code, redirectUri);
+  async fetchProfileByCode(code: string, redirectUri: string): Promise<SocialProfile> {
+    return this.fetchProfileByToken(await this.exchangeCode(code, redirectUri));
+  }
+
+  /** 앱이 넘기는 값은 카카오 SDK 가 받아온 **access token** 이다. */
+  async fetchProfileByToken(accessToken: string): Promise<SocialProfile> {
     const profile = await this.fetchKakaoProfile(accessToken);
 
     return {

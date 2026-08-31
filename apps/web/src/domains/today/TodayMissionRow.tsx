@@ -1,7 +1,7 @@
 "use client";
 
 import { formatMissionTarget } from "./todayLabels";
-import type { TodayMission } from "./todayTypes";
+import { type TodayMission } from "@nadaena/api-client";
 
 export function TodayMissionRow({
   mission,

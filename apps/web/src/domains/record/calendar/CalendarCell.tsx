@@ -1,7 +1,7 @@
 "use client";
 
 import { getGrassColorClass } from "../grassColors";
-import type { CalendarDay } from "./calendarTypes";
+import type { CalendarDay } from "@nadaena/api-client";
 
 const MAX_PLANNED_DOTS = 5;
 

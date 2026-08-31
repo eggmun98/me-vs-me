@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import type { WinLoseCount } from "@/domains/today/todayTypes";
-import { useToday } from "@/domains/today/useToday";
+import { useMe, useToday, type WinLoseCount } from "@nadaena/api-client";
 import { QueryState } from "@/shared/ui/QueryState";
 
 export default function MyPage() {
   const { data: today, isLoading, error } = useToday();
+  const { data: me } = useMe();
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
       <QueryState isLoading={isLoading} error={error}>
         {today && (
           <section className="mb-4 rounded-2xl border border-border bg-surface p-5">
@@ -18,8 +18,10 @@ export default function MyPage() {
                 🙂
               </span>
               <div className="min-w-0">
-                <p className="text-[15px] font-bold">문성진</p>
-                <p className="mt-0.5 text-xs text-content-muted">오늘도 나와 싸운다</p>
+                <p className="text-[15px] font-bold">{me?.nickname ?? "…"}</p>
+                <p className="mt-0.5 text-xs text-content-muted">
+                  {me?.bio ?? "오늘도 나와 싸운다"}
+                </p>
                 <p className="mt-1.5 text-sm font-bold text-win-3 tnum">
                   🔥 현재 {today.summary.streak.current}연승
                 </p>

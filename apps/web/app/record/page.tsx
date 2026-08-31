@@ -2,13 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { MissionFormModal } from "@/domains/mission/MissionFormModal";
-import type { MissionDraft } from "@/domains/mission/missionTypes";
-import { useCreateMission, useMissions } from "@/domains/mission/useMissions";
+import { type GrassDay, type MissionDraft, useCreateMission, useGrass, useMissions, useToday } from "@nadaena/api-client";
 import { CalendarView } from "@/domains/record/calendar/CalendarView";
 import { RecordTabs } from "@/domains/record/RecordTabs";
-import { useGrass } from "@/domains/record/useRecords";
-import { useToday } from "@/domains/today/useToday";
-import type { GrassDay } from "@/domains/today/todayTypes";
 import { QueryState } from "@/shared/ui/QueryState";
 
 export default function RecordPage() {
@@ -32,7 +28,7 @@ export default function RecordPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
       <RecordTabs />
 
       <QueryState isLoading={isTodayLoading || isGrassLoading} error={todayError}>

@@ -9,9 +9,17 @@ import { TokenService, type TokenPair } from "./token.service";
 
 export type LoginResult = TokenPair & { isNewUser: boolean };
 
+/** 웹은 `code`, 앱은 `token` 을 들고 온다. */
+export type SocialCredential = {
+  code?: string;
+  redirectUri?: string;
+  token?: string;
+};
+
 @Injectable()
 export class AuthService {
   private readonly providers: Map<string, SocialProvider>;
+  private allowedRedirectUriCache: Set<string> | null = null;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -28,17 +36,38 @@ export class AuthService {
 
   async loginWithSocial(
     provider: string,
-    code: string,
+    credential: SocialCredential,
     deviceInfo: string | null,
   ): Promise<LoginResult> {
     const social = this.providers.get(provider);
 
     if (!social) throw new BadRequestException(`지원하지 않는 로그인 방식입니다: ${provider}`);
 
-    const profile = await social.fetchProfile(code, this.buildRedirectUri(provider));
+    const profile = await this.fetchProfile(social, provider, credential);
     const { userId, isNewUser } = await this.findOrCreateUser(social.name, profile);
 
     return { ...(await this.tokens.issue(userId, deviceInfo)), isNewUser };
+  }
+
+  /**
+   * 앱이면 토큰으로, 웹이면 인가 코드로 프로필을 가져온다.
+   * 토큰이 오면 콜백 주소를 볼 이유가 없다 — 리다이렉트를 거치지 않았기 때문이다.
+   */
+  private fetchProfile(
+    social: SocialProvider,
+    provider: string,
+    credential: SocialCredential,
+  ): Promise<SocialProfile> {
+    if (credential.token) return social.fetchProfileByToken(credential.token);
+
+    if (!credential.code) {
+      throw new BadRequestException("code 또는 token 중 하나가 필요합니다.");
+    }
+
+    return social.fetchProfileByCode(
+      credential.code,
+      this.resolveRedirectUri(provider, credential.redirectUri),
+    );
   }
 
   /**
@@ -96,10 +125,39 @@ export class AuthService {
     return `${base}${Date.now().toString(36)}`;
   }
 
-  private buildRedirectUri(provider: string): string {
+  /**
+   * 콜백 주소를 클라이언트가 정한다. 대신 허용 목록에 있는 것만 받는다.
+   *
+   * 웹은 `https://nadaena.com/auth/callback/kakao`, 앱은 `nadaena://auth/callback/kakao` 로
+   * 서로 다른 주소를 쓴다. 그렇다고 아무 값이나 받으면 인가 코드를 남의 주소로 흘릴 수 있다.
+   */
+  private resolveRedirectUri(provider: string, requested?: string): string {
+    const fallback = this.buildWebRedirectUri(provider);
+
+    if (!requested || requested === fallback) return fallback;
+
+    if (!this.allowedRedirectUris().has(requested)) {
+      throw new BadRequestException(`허용되지 않은 콜백 주소입니다: ${requested}`);
+    }
+
+    return requested;
+  }
+
+  private buildWebRedirectUri(provider: string): string {
     const base = this.config.getOrThrow<string>("OAUTH_REDIRECT_BASE");
 
     return `${base}/auth/callback/${provider}`;
+  }
+
+  private allowedRedirectUris(): Set<string> {
+    this.allowedRedirectUriCache ??= new Set(
+      (this.config.get<string>("OAUTH_ALLOWED_REDIRECT_URIS") ?? "")
+        .split(",")
+        .map((uri) => uri.trim())
+        .filter(Boolean),
+    );
+
+    return this.allowedRedirectUriCache;
   }
 }
 
