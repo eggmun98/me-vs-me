@@ -17,6 +17,15 @@ export default (): ExpoConfig => ({
    */
   name: "Nadaena",
   slug: "nadaena",
+  /**
+   * EAS 프로젝트가 @eggmun 계정 아래에 있다. 조직 계정과 헷갈리지 않게 못 박는다.
+   *
+   * 이 값과 아래 `projectId` 는 환경변수로 빼지 않는다. `expo` CLI 와 달리
+   * `eas` CLI 는 `.env` 를 읽지 않아서, 빼면 모든 eas 명령이
+   * `EAS project not configured` 로 죽는다. 비밀값도 아니다 —
+   * 업데이트 주소로 공개되고 앱 바이너리에도 들어간다.
+   */
+  owner: "eggmun",
   version: "0.1.0",
   orientation: "portrait",
   userInterfaceStyle: "light",
@@ -27,6 +36,16 @@ export default (): ExpoConfig => ({
     bundleIdentifier: "com.nadaena.app",
     infoPlist: {
       CFBundleDevelopmentRegion: "ko",
+      /**
+       * 미국 수출 규정상 암호화 자체분류 신고를 면제받는다.
+       *
+       * HTTPS · JWT · 키체인(expo-secure-store) 만 쓰고 독자 암호화를 구현하지 않았다.
+       * 자체 암호화를 넣는 순간 이 값을 되돌리고 신고해야 한다.
+       *
+       * `ios.config.usesNonExemptEncryption` 도 같은 키로 번역되지만,
+       * eas-cli 는 infoPlist 만 들여다보고 없으면 매번 다시 묻는다.
+       */
+      ITSAppUsesNonExemptEncryption: false,
     },
   },
 
@@ -47,6 +66,24 @@ export default (): ExpoConfig => ({
    */
   runtimeVersion: {
     policy: "appVersion",
+  },
+
+  /** 앱이 업데이트를 받아올 주소. 프로젝트 ID 에서 그대로 만들어진다. */
+  updates: {
+    url: "https://u.expo.dev/fe400a3c-45bc-4087-9b0a-5fa27d612ae8",
+  },
+
+  /**
+   * EAS 프로젝트 ID 를 직접 넣는다.
+   *
+   * `app.json` 이면 eas-cli 가 알아서 써넣지만, 이 파일은 함수를 실행해 설정을 만드는
+   * 동적 설정이라 CLI 가 어디에 끼워야 할지 알 수 없다. 없으면 빌드가 프로젝트 연결
+   * 단계에서 죽는다.
+   */
+  extra: {
+    eas: {
+      projectId: "fe400a3c-45bc-4087-9b0a-5fa27d612ae8",
+    },
   },
 
   experiments: {
