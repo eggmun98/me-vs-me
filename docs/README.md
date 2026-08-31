@@ -4,13 +4,20 @@
 
 | 문서 | 내용 | 상태 |
 | --- | --- | --- |
-| [01-service-plan.md](./01-service-plan.md) | 서비스 기획서 (원문 1~38장 + 승패 규칙 + 팔레트) | v0.5 |
-| [02-open-questions.md](./02-open-questions.md) | 확정된 규칙 + 남은 항목 | A·B·C 닫힘 |
-| [03-tech-stack.md](./03-tech-stack.md) | 기술 스택 · 인프라 결정 + 근거 | v1.0 |
-| [04-folder-convention.md](./04-folder-convention.md) | 폴더 구조 · 코드 작성 규칙 | v1.0 |
-| [05-screens.md](./05-screens.md) | 화면설계서 (MVP) | v0.3 |
-| [06-database.md](./06-database.md) | DB 스키마 (MVP) | v0.2 |
-| [07-api.md](./07-api.md) | API 명세 (MVP) | v0.2 |
+| [01-service-plan.md](./planning/01-service-plan.md) | 서비스 기획서 (원문 1~38장 + 승패 규칙 + 팔레트) | v0.5 |
+| [02-open-questions.md](./planning/02-open-questions.md) | 확정된 규칙 + 남은 항목 | A·B·C 닫힘 |
+| [03-tech-stack.md](./planning/03-tech-stack.md) | 기술 스택 · 인프라 결정 + 근거 | v1.0 |
+| [04-folder-convention.md](./planning/04-folder-convention.md) | 폴더 구조 · 코드 작성 규칙 | v1.0 |
+| [05-screens.md](./planning/05-screens.md) | 화면설계서 (MVP) | v0.3 |
+| [06-database.md](./planning/06-database.md) | DB 스키마 (MVP) | v0.2 |
+| [07-api.md](./planning/07-api.md) | API 명세 (MVP) | v0.2 |
+
+## 폴더
+
+| 폴더 | 내용 |
+| --- | --- |
+| [planning/](./planning/) | 기획 · 설계 문서. 무엇을 왜 만드는지 |
+| [issues/](./issues/README.md) | 막혔던 문제와 원인. 같은 곳에 두 번 빠지지 않기 위해 |
 
 ## 작업 순서
 
@@ -125,3 +132,12 @@ pnpm dev:app
 
 실기기로 붙일 때는 `apps/mobile/.env` 의 `EXPO_PUBLIC_API_URL` 을 개발 PC 의 LAN 주소로 바꾼다.
 기기에서 `localhost` 는 기기 자신이다.
+
+안드로이드 에뮬레이터는 `.env` 를 고치는 대신 포트를 연결한다. iOS 와 같은 설정을 그대로 쓸 수 있다.
+
+```bash
+adb reverse tcp:8081 tcp:8081   # Metro
+adb reverse tcp:4000 tcp:4000   # API
+```
+
+로딩에서 멈추면 이 연결부터 확인한다. [issues/06](./issues/06-android-emulator-networking.md)
