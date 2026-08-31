@@ -7,9 +7,12 @@ import { RESULT_COLOR } from "@/domains/today/resultTone";
 
 export function DayDetailSheet({
   day,
+  onAddOnce,
   onClose,
 }: {
   day: CalendarDay | null;
+  /** 아직 오지 않은 날에만 쓴다. 지난 날에는 미션을 새로 만들 수 없다. */
+  onAddOnce: (date: string) => void;
   onClose: () => void;
 }) {
   return (
@@ -17,7 +20,18 @@ export function DayDetailSheet({
       isOpen={day !== null}
       title={day ? formatKoreanDate(day.date) : ""}
       onClose={onClose}
-      footer={<AppButton label="닫기" tone="outline" onPress={onClose} style={styles.footer} />}
+      footer={
+        <>
+          <AppButton label="닫기" tone="outline" onPress={onClose} style={styles.footer} />
+          {day?.kind === "FUTURE" && (
+            <AppButton
+              label="이 날 미션 추가"
+              onPress={() => onAddOnce(day.date)}
+              style={styles.footer}
+            />
+          )}
+        </>
+      }
     >
       {day && <DayBody day={day} />}
     </Sheet>

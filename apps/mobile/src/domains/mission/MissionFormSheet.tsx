@@ -20,6 +20,8 @@ export function MissionFormSheet({
   isOpen,
   today,
   mission,
+  defaultRepeat,
+  title,
   isSaving,
   onSubmit,
   onClose,
@@ -28,24 +30,29 @@ export function MissionFormSheet({
   today: string;
   /** 없으면 새로 만드는 중이다. */
   mission?: Mission;
+  /** 들어온 경로에 따라 기본 반복이 다르다. 달력에서 왔으면 그날 하루만. */
+  defaultRepeat?: RepeatRule;
+  title?: string;
   isSaving: boolean;
   onSubmit: (draft: MissionDraft) => void;
   onClose: () => void;
 }) {
   const { data: categories = [] } = useCategories();
-  const [draft, setDraft] = useState<MissionDraft>(() => createDraft(today, mission));
+  const [draft, setDraft] = useState<MissionDraft>(() =>
+    createDraft(today, mission, defaultRepeat),
+  );
 
   // 시트를 다시 열면 이전에 쓰던 값이 남아 있으면 안 된다.
   useEffect(() => {
-    if (isOpen) setDraft(createDraft(today, mission));
-  }, [isOpen, mission, today]);
+    if (isOpen) setDraft(createDraft(today, mission, defaultRepeat));
+  }, [isOpen, mission, today, defaultRepeat]);
 
   const canSubmit = draft.name.trim().length > 0;
 
   return (
     <Sheet
       isOpen={isOpen}
-      title={mission ? "미션 수정" : "미션 추가"}
+      title={title ?? (mission ? "미션 수정" : "미션 추가")}
       onClose={onClose}
       footer={
         <>
@@ -120,7 +127,11 @@ export function MissionFormSheet({
 }
 
 /** 수정이면 서버가 준 평평한 payload 를, 새로 만들면 매일 반복을 기본값으로 쓴다. */
-function createDraft(today: string, mission?: Mission): MissionDraft {
+function createDraft(
+  today: string,
+  mission?: Mission,
+  defaultRepeat?: RepeatRule,
+): MissionDraft {
   if (!mission) {
     return {
       name: "",
@@ -128,7 +139,7 @@ function createDraft(today: string, mission?: Mission): MissionDraft {
       targetAmount: null,
       unit: null,
       difficulty: "NORMAL",
-      repeat: buildRepeatPreset("DAILY", today),
+      repeat: defaultRepeat ?? buildRepeatPreset("DAILY", today),
     };
   }
 
