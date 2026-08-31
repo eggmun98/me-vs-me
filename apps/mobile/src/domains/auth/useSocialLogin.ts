@@ -2,6 +2,7 @@ import { loginWithSocial, type SocialProviderId } from "@nadaena/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { requestSocialToken } from "./socialLogin";
+import { describeToken, logSocialFailure } from "./socialLoginDebug";
 
 export type SocialLoginState = {
   pendingProvider: SocialProviderId | null;
@@ -40,6 +41,9 @@ export function useSocialLogin() {
 
       return { isNewUser: result.isNewUser };
     } catch (error) {
+      // 토큰은 받았는데 서버가 거절한 경우다. 화면 문구만으로는 이유를 알 수 없다.
+      logSocialFailure(provider, "서버 검증", error, describeToken(provider, authorized.token));
+
       setState({
         pendingProvider: null,
         error: error instanceof Error ? error.message : "로그인에 실패했습니다.",

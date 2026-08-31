@@ -4,6 +4,7 @@ import { login as kakaoLogin } from "@react-native-kakao/user";
 import type { SocialProviderId } from "@nadaena/api-client";
 import { Platform } from "react-native";
 import { env } from "@/shared/config/env";
+import { logSocialFailure, type SocialStep } from "./socialLoginDebug";
 
 export const PROVIDER_LABELS: Record<SocialProviderId, string> = {
   kakao: "카카오로 시작하기",
@@ -14,6 +15,9 @@ export type SocialTokenResult =
   | { type: "success"; token: string }
   | { type: "cancelled" }
   | { type: "error"; message: string };
+
+/** 어느 단계에서 끊겼는지 로그에 남기기 위한 표식. 흐름 자체는 바꾸지 않는다. */
+type TrackStep = (step: SocialStep) => void;
 
 /**
  * 앱은 **네이티브 SDK 로 토큰까지 받아서** 서버에 넘긴다.
@@ -26,21 +30,38 @@ export type SocialTokenResult =
 export async function requestSocialToken(
   provider: SocialProviderId,
 ): Promise<SocialTokenResult> {
+  let step: SocialStep = "설정 확인";
+  const track: TrackStep = (next) => {
+    step = next;
+  };
+
   try {
-    return provider === "kakao" ? await requestKakaoToken() : await requestGoogleToken();
+    const result =
+      provider === "kakao" ? await requestKakaoToken(track) : await requestGoogleToken(track);
+
+    if (result.type === "error") logSocialFailure(provider, step, new Error(result.message));
+
+    return result;
   } catch (error) {
+    logSocialFailure(provider, step, error);
+
     return { type: "error", message: toMessage(error) };
   }
 }
 
 /** 카카오는 **access token** 을 준다. 서버가 이걸로 프로필을 조회한다. */
-async function requestKakaoToken(): Promise<SocialTokenResult> {
+async function requestKakaoToken(track: TrackStep): Promise<SocialTokenResult> {
   if (!env.kakaoNativeAppKey) {
     return { type: "error", message: "카카오 네이티브 앱 키가 없습니다. .env 를 확인하세요." };
   }
 
+  track("SDK 초기화");
   await ensureKakaoReady();
+
+  track("네이티브 로그인");
   const result = await kakaoLogin();
+
+  track("토큰 수령");
 
   return result.accessToken
     ? { type: "success", token: result.accessToken }
@@ -48,17 +69,21 @@ async function requestKakaoToken(): Promise<SocialTokenResult> {
 }
 
 /** 구글은 **ID token** 을 준다. 서명된 JWT 라 서버가 직접 검증한다. */
-async function requestGoogleToken(): Promise<SocialTokenResult> {
+async function requestGoogleToken(track: TrackStep): Promise<SocialTokenResult> {
   if (!env.googleWebClientId) {
     return { type: "error", message: "구글 클라이언트 ID 가 없습니다. .env 를 확인하세요." };
   }
 
+  track("SDK 초기화");
   ensureGoogleConfigured();
   await GoogleSignin.hasPlayServices();
 
+  track("네이티브 로그인");
   const result = await GoogleSignin.signIn();
 
   if (result.type !== "success") return { type: "cancelled" };
+
+  track("토큰 수령");
 
   return result.data.idToken
     ? { type: "success", token: result.data.idToken }
