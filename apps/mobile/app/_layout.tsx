@@ -1,5 +1,6 @@
 import "@/shared/config/configureApi";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -28,23 +29,26 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={client}>
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: colors.bg },
-              headerTitleStyle: { color: colors.content, fontSize: 16, fontWeight: "700" },
-              headerTintColor: colors.content,
-              headerShadowVisible: false,
-              contentStyle: { backgroundColor: colors.bg },
-            }}
-          >
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="onboarding" options={{ title: "시작하기" }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="missions" options={{ title: "미션 관리" }} />
-            <Stack.Screen name="settings" options={{ title: "설정" }} />
-          </Stack>
+          {/* 바텀시트는 어느 화면에서든 열 수 있어야 해서 최상단에 둔다. */}
+          <BottomSheetModalProvider>
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: colors.bg },
+                headerTitleStyle: { color: colors.content, fontSize: 16, fontWeight: "700" },
+                headerTintColor: colors.content,
+                headerShadowVisible: false,
+                contentStyle: { backgroundColor: colors.bg },
+              }}
+            >
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="login" options={{ headerShown: false }} />
+              <Stack.Screen name="onboarding" options={{ title: "시작하기" }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="missions" options={{ title: "미션 관리" }} />
+              <Stack.Screen name="settings" options={{ title: "설정" }} />
+            </Stack>
+          </BottomSheetModalProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
