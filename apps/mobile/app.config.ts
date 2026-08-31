@@ -56,7 +56,18 @@ export default (): ExpoConfig => ({
   plugins: [
     "expo-router",
     "expo-secure-store",
-    ["expo-splash-screen", { backgroundColor: "#fafafa", resizeMode: "contain" }],
+    /**
+     * `expo-splash-screen` 플러그인은 `image` 없이 끼우면 안 된다.
+     *
+     * 안드로이드 템플릿은 `Theme.App.SplashScreen` 에서 `@drawable/splashscreen_logo` 를
+     * 가리키고, 그 기본 이미지를 density 별로 넣어준다. 그런데 이 플러그인은 적용되는 순간
+     * **기존 splash 이미지를 전부 지우고** `image` 가 주어졌을 때만 새로 넣는다.
+     * `backgroundColor` 만 주면 지우기만 해서, 참조는 남고 파일은 없는 상태가 된다
+     * → `resource drawable/splashscreen_logo not found` 로 빌드가 죽는다.
+     * (iOS 는 이 경로를 타지 않아 통과한다.)
+     *
+     * 로고 자산이 생기면 `image` 와 함께 다시 넣는다. 그전까지는 템플릿 기본값을 쓴다.
+     */
     /**
      * 카카오 안드로이드 SDK 는 Maven Central 에 없고 카카오 저장소에만 있다.
      *
