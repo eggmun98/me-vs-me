@@ -1,8 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ApiRequestError, logout, type Me, useMe, useUpdateMe } from "@nadaena/api-client";
+import {
+  ApiRequestError,
+  logout,
+  type Me,
+  useDeleteAccount,
+  useMe,
+  useUpdateMe,
+} from "@nadaena/api-client";
+import { AccountDeleteModal } from "@/domains/user/AccountDeleteModal";
 import { Field, inputClassName } from "@/shared/ui/Field";
 import { QueryState } from "@/shared/ui/QueryState";
 
@@ -11,10 +20,27 @@ const TIMEZONES = ["Asia/Seoul", "Asia/Tokyo", "America/New_York", "Europe/Londo
 export default function SettingsPage() {
   const router = useRouter();
   const { data: me, isLoading, error } = useMe();
+  const deleteAccount = useDeleteAccount();
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleLogout() {
     await logout();
     router.replace("/");
+  }
+
+  function handleDelete() {
+    setDeleteError(null);
+    deleteAccount.mutate(undefined, {
+      onSuccess: () => router.replace("/"),
+      /**
+       * 실패하면 모달을 닫지 않는다. 닫아버리면 탈퇴가 된 건지 아닌지 알 수 없다.
+       */
+      onError: (caught) =>
+        setDeleteError(
+          caught instanceof ApiRequestError ? caught.message : "탈퇴하지 못했습니다.",
+        ),
+    });
   }
 
   return (
@@ -38,15 +64,43 @@ export default function SettingsPage() {
             </button>
             <button
               type="button"
-              className="self-start text-content-dim transition-colors hover:text-content"
+              onClick={() => setDeleteOpen(true)}
+              className="self-start text-content-dim transition-colors hover:text-lose"
             >
               회원 탈퇴
             </button>
           </div>
         </section>
 
+        <section className="rounded-2xl border border-border bg-surface p-5">
+          <h2 className="mb-4 text-xs font-semibold text-content-dim">약관</h2>
+          <div className="flex flex-col gap-2 text-sm">
+            <Link
+              href="/terms"
+              className="self-start text-content-muted transition-colors hover:text-content"
+            >
+              이용약관
+            </Link>
+            <Link
+              href="/privacy"
+              className="self-start text-content-muted transition-colors hover:text-content"
+            >
+              개인정보처리방침
+            </Link>
+          </div>
+        </section>
+
         <p className="text-[11px] text-content-dim">알림 설정은 Phase 2에서 추가됩니다.</p>
       </div>
+
+      {isDeleteOpen && (
+        <AccountDeleteModal
+          isPending={deleteAccount.isPending}
+          error={deleteError}
+          onConfirm={handleDelete}
+          onClose={() => setDeleteOpen(false)}
+        />
+      )}
     </div>
   );
 }
