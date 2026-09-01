@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { SocialProviderId } from "@nadaena/api-client";
 import { useState } from "react";
 import { buildSocialLoginUrl } from "@/domains/auth/socialLoginUrl";
@@ -42,6 +43,19 @@ export default function LoginPage() {
 						구글로 계속하기
 					</button>
 				</div>
+
+				{/* 가입이 일어나는 지점이라 여기서 알린다. 설정 화면에만 두면 동의 전에 볼 수 없다. */}
+				<p className="mt-6 text-[11px] leading-relaxed text-content-dim">
+					계속하면{" "}
+					<Link href="/terms" className="underline underline-offset-2 hover:text-content">
+						이용약관
+					</Link>
+					과{" "}
+					<Link href="/privacy" className="underline underline-offset-2 hover:text-content">
+						개인정보처리방침
+					</Link>
+					에 동의하는 것으로 봅니다.
+				</p>
 
 				{error && (
 					<p className="mt-5 rounded-lg border border-border bg-surface px-3 py-2.5 text-xs leading-relaxed text-content-muted">
