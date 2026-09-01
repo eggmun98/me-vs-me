@@ -1,5 +1,5 @@
 import { setAccessToken } from "../client/accessToken";
-import { apiPost, tryRefresh } from "../client/apiClient";
+import { apiDelete, apiPost, tryRefresh } from "../client/apiClient";
 import { getRefreshTokenStore } from "../client/config";
 import type { LoginResponse, SocialCredential, SocialProviderId } from "./authTypes";
 
@@ -45,4 +45,26 @@ export async function logout(): Promise<void> {
     setAccessToken(null);
     await store?.clear();
   }
+}
+
+/** 탈퇴가 받아들여졌을 때 서버가 알려주는 것 — 언제 실제로 지워지는지. */
+export type AccountDeletion = {
+  deletedAt: string;
+  purgeAt: string;
+  retentionDays: number;
+};
+
+/**
+ * 회원탈퇴. 성공하면 이 기기의 세션도 함께 끊는다.
+ *
+ * `logout` 과 달리 실패를 삼키지 않는다. 서버가 못 받았는데 화면만 로그아웃되면
+ * 사용자는 탈퇴됐다고 믿지만 계정은 그대로 남는다.
+ */
+export async function deleteAccount(): Promise<AccountDeletion> {
+  const result = await apiDelete<AccountDeletion>("/users/me");
+
+  setAccessToken(null);
+  await getRefreshTokenStore()?.clear();
+
+  return result;
 }

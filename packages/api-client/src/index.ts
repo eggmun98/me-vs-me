@@ -10,13 +10,15 @@ export { getAccessToken, setAccessToken, subscribeAccessToken } from "./client/a
 export { queryKeys } from "./queryKeys";
 
 // auth
-export { loginWithSocial, logout, restoreSession } from "./auth/authApi";
+export { deleteAccount, loginWithSocial, logout, restoreSession } from "./auth/authApi";
+export type { AccountDeletion } from "./auth/authApi";
 export type { LoginResponse, SocialCredential, SocialProviderId } from "./auth/authTypes";
 
 // user
 export {
   useCheckNickname,
   useCompleteOnboarding,
+  useDeleteAccount,
   useMe,
   useSuggestNickname,
   useUpdateMe,
