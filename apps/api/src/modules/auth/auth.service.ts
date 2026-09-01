@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { purgeAfter } from "@nadaena/core";
 import type { AuthProviderType } from "@prisma/client";
 import { PrismaService } from "@/prisma/prisma.service";
 import { GoogleProvider } from "./providers/google.provider";
@@ -85,10 +86,33 @@ export class AuthService {
       where: {
         provider_providerUserId: { provider, providerUserId: profile.providerUserId },
       },
-      select: { userId: true },
+      select: { userId: true, user: { select: { deletedAt: true } } },
     });
 
-    if (existing) return { userId: existing.userId, isNewUser: false };
+    if (existing) {
+      const withdrawnAt = existing.user.deletedAt;
+
+      if (!withdrawnAt) return { userId: existing.userId, isNewUser: false };
+
+      /**
+       * 유예기간이 남았으면 되살린다. 기록이 그대로 있으므로 새 계정이 아니다.
+       * 온보딩도 이미 마친 상태라 `isNewUser` 가 true 면 첫 화면으로 잘못 보낸다.
+       */
+      if (purgeAfter(withdrawnAt) > new Date()) {
+        await this.prisma.user.update({
+          where: { id: existing.userId },
+          data: { deletedAt: null },
+        });
+
+        return { userId: existing.userId, isNewUser: false };
+      }
+
+      /**
+       * 유예기간이 지났는데 배치가 아직 지우지 않았다.
+       * 되살리면 지웠어야 할 데이터를 돌려주는 셈이라, 지금 지우고 새 계정으로 받는다.
+       */
+      await this.prisma.user.delete({ where: { id: existing.userId } });
+    }
 
     const user = await this.prisma.user.create({
       data: {
