@@ -1,0 +1,9 @@
+<svg width="256" height="160" viewBox="0 0 256 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>nadaena mark</title>
+  <path d="M28 32H58L112 86V128H82L28 74V32Z" fill="#0D21A1"/>
+  <path d="M58 32H28L82 86V128H112L58 32Z" fill="#1538D6" fill-opacity="0.78"/>
+  <path d="M228 32H198L144 86V128H174L228 74V32Z" fill="#011638"/>
+  <path d="M198 32H228L174 86V128H144L198 32Z" fill="#0A2463" fill-opacity="0.86"/>
+  <path d="M128 33L138 70L175 80L138 90L128 127L118 90L81 80L118 70L128 33Z" fill="#EEC643"/>
+  <path d="M126 26L131 50M130 110L135 134M86 43L101 62M155 98L171 118" stroke="#0D21A1" stroke-width="6" stroke-linecap="round"/>
+</svg>
