@@ -1,33 +1,34 @@
 {
-  "name": "@nadaena/api-client",
-  "version": "0.1.0",
-  "private": true,
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@nadaena/core": "workspace:*"
-  },
-  "peerDependencies": {
-    "@tanstack/react-query": ">=5",
-    "react": ">=19"
-  },
-  "devDependencies": {
-    "@tanstack/react-query": "^5.102.6",
-    "@types/react": "^19",
-    "react": "19.2.3",
-    "typescript": "^5"
-  },
-  "files": [
-    "dist"
-  ]
+	"name": "@nadaena/api-client",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"scripts": {
+		"build": "tsc -p tsconfig.build.json",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@nadaena/core": "workspace:*"
+	},
+	"peerDependencies": {
+		"@tanstack/react-query": ">=5",
+		"react": ">=19"
+	},
+	"devDependencies": {
+		"@tanstack/react-query": "^5.102.6",
+		"@types/react": "^19",
+		"react": "19.2.3",
+		"typescript": "^5"
+	},
+	"files": [
+		"dist"
+	]
 }
