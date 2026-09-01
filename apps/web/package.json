@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "pnpm --filter @nadaena/core --filter @nadaena/api-client build && next dev",
-    "build": "pnpm --filter @nadaena/core --filter @nadaena/api-client build && next build",
+    "build": "pnpm --filter @nadaena/core --filter @nadaena/api-client build && next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },
