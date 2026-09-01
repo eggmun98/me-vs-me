@@ -1,7 +1,11 @@
-import { ApiRequestError, type Me, useUpdateMe } from "@nadaena/api-client";
+import { ApiRequestError, type Me, useDeleteAccount, useUpdateMe } from "@nadaena/api-client";
+import { useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Linking, StyleSheet, Text, View } from "react-native";
+import { AccountDeleteSheet } from "./AccountDeleteSheet";
 import { TIMEZONE_OPTIONS } from "./timezones";
+import { WEB_URL } from "@/shared/config/urls";
 import { colors, spacing } from "@/shared/theme/colors";
 import { AppButton } from "@/shared/ui/AppButton";
 import { Card } from "@/shared/ui/Card";
@@ -10,10 +14,30 @@ import { AppTextInput, Field } from "@/shared/ui/Field";
 
 export function SettingsView({ me }: { me: Me }) {
   const updateMe = useUpdateMe();
+  const deleteAccount = useDeleteAccount();
+  const queryClient = useQueryClient();
   const [nickname, setNickname] = useState(me.nickname);
   const [bio, setBio] = useState(me.bio ?? "");
   const [timezone, setTimezone] = useState(me.timezone);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteOpen, setDeleteOpen] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function handleDelete() {
+    setDeleteError(null);
+    deleteAccount.mutate(undefined, {
+      onSuccess() {
+        queryClient.clear();
+        setDeleteOpen(false);
+        router.replace("/login");
+      },
+      // 실패하면 시트를 닫지 않는다. 닫아버리면 탈퇴가 된 건지 아닌지 알 수 없다.
+      onError: (caught) =>
+        setDeleteError(
+          caught instanceof ApiRequestError ? caught.message : "탈퇴하지 못했습니다.",
+        ),
+    });
+  }
 
   const isDirty =
     nickname.trim() !== me.nickname || bio.trim() !== (me.bio ?? "") || timezone !== me.timezone;
@@ -62,6 +86,29 @@ export function SettingsView({ me }: { me: Me }) {
         disabled={!isDirty || nickname.trim().length === 0}
         isLoading={updateMe.isPending}
         onPress={handleSave}
+      />
+
+      <Card title="약관">
+        <AppButton
+          label="이용약관"
+          tone="ghost"
+          onPress={() => void Linking.openURL(`${WEB_URL}/terms`)}
+        />
+        <AppButton
+          label="개인정보처리방침"
+          tone="ghost"
+          onPress={() => void Linking.openURL(`${WEB_URL}/privacy`)}
+        />
+      </Card>
+
+      <AppButton label="회원 탈퇴" tone="ghost" onPress={() => setDeleteOpen(true)} />
+
+      <AccountDeleteSheet
+        isOpen={isDeleteOpen}
+        isPending={deleteAccount.isPending}
+        error={deleteError}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteOpen(false)}
       />
     </View>
   );
