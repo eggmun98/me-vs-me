@@ -1,4 +1,5 @@
-import { ConflictException, Injectable } from "@nestjs/common";
+import { ConflictException, ForbiddenException, Injectable } from "@nestjs/common";
+import { ACCOUNT_RETENTION_DAYS, purgeAfter } from "@nadaena/core";
 import { CurrentUserService } from "@/common/currentUser.service";
 import { DailyService } from "@/modules/daily/daily.service";
 import { payloadToColumns } from "@/modules/mission/repeatMapping";
@@ -87,6 +88,43 @@ export class UserService {
     await this.prisma.user.update({ where: { id: userId }, data: patch });
 
     return this.getMe();
+  }
+
+  /**
+   * 회원탈퇴.
+   *
+   * 행을 지우지 않고 `deletedAt` 만 남긴다. 기록은 그대로 두되 아무도 읽지 못하게 잠근다.
+   * 실제 삭제는 유예기간이 지난 뒤 `AccountPurgeService` 가 한다 — 잘못 눌렀을 때
+   * 되돌릴 길을 남기기 위해서다. 유예기간 안에 다시 로그인하면 계정이 되살아난다.
+   *
+   * 리프레시 토큰은 여기서 전부 폐기한다. 남겨두면 탈퇴한 계정으로 세션이 계속 살아난다.
+   */
+  async deleteMe(): Promise<{ deletedAt: string; purgeAt: string; retentionDays: number }> {
+    const user = await this.currentUser.getUser();
+
+    // 둘러보기가 이 계정을 읽는다. 지워지면 로그인 전 화면이 통째로 빈다.
+    if (user.isDemo) {
+      throw new ForbiddenException({
+        code: "DEMO_ACCOUNT",
+        message: "둘러보기 계정은 탈퇴할 수 없습니다.",
+      });
+    }
+
+    const deletedAt = new Date();
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: user.id }, data: { deletedAt } }),
+      this.prisma.refreshToken.updateMany({
+        where: { userId: user.id, revokedAt: null },
+        data: { revokedAt: deletedAt },
+      }),
+    ]);
+
+    return {
+      deletedAt: deletedAt.toISOString(),
+      purgeAt: purgeAfter(deletedAt).toISOString(),
+      retentionDays: ACCOUNT_RETENTION_DAYS,
+    };
   }
 
   async isNicknameAvailable(nickname: string): Promise<{ available: boolean }> {

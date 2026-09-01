@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Patch, Post, Query } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { OnboardingDto } from "./dto/onboarding.dto";
 import { UserService } from "./user.service";
@@ -24,6 +24,12 @@ export class UserController {
   @ApiOperation({ summary: "온보딩 완료 — 닉네임·타임존·첫 미션을 한 번에" })
   completeOnboarding(@Body() dto: OnboardingDto) {
     return this.userService.completeOnboarding(dto);
+  }
+
+  @Delete("me")
+  @ApiOperation({ summary: "회원탈퇴 — 유예기간 뒤 삭제된다. 기간 안에 다시 로그인하면 복구" })
+  deleteMe() {
+    return this.userService.deleteMe();
   }
 
   @Get("nickname/check")
